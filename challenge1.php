@@ -1,15 +1,52 @@
 <?php
+function shifted_diff(string $first, string $second)
+{
+    $valid = stringsAreValid($first, $second);
+    $rotationString = $first;
+    $rotations = 0;
+
+    if ($valid) {
+        while ($rotations < strlen($rotationString)) {
+            if (rotationNotNeeded($first, $second)) {
+                return 0;
+            }
+            $rotationString = rotateForward($rotationString);
+            ++$rotations;
+            if (isStringRotated($rotationString, $second)) {
+                return $rotations;
+            }
+        }
+    }
+
+    return -1;
+}
+
 function stringsAreValid(string $first, string $second): bool
 {
-    if (strlen($first) !== strlen($second)) {
+    if (checkIfSameSize($first, $second)) {
         return false;
     }
 
-    if ($first === '' || $second === '') {
+    if (checkForEmptyStrings($first, $second)) {
         return false;
     }
 
     return true;
+}
+
+function checkIfSameSize(string $first, string $second): bool
+{
+    return strlen($first) !== strlen($second);
+}
+
+function checkForEmptyStrings(string $first, string $second): bool
+{
+    return $first === '' || $second === '';
+}
+
+function rotationNotNeeded(string $first, string $second): bool
+{
+    return $first === $second;
 }
 
 function rotateForward(string $string): string
@@ -18,33 +55,16 @@ function rotateForward(string $string): string
     $rotatedArray = [];
 
     $rotatedArray[] = array_pop($stringAsArray);
-    foreach ($stringAsArray as $iValue) {
-        $rotatedArray[] = $iValue;
+    foreach ($stringAsArray as $letter) {
+        $rotatedArray[] = $letter;
     }
 
     return implode($rotatedArray);
 }
 
-function shifted_diff(string $first, string $second)
+function isStringRotated(string $rotatingString, string $second): bool
 {
-    $valid = stringsAreValid($first, $second);
-    $rotationString = $first;
-    $rotations = 0;
-
-    if ($valid) {
-        if ($first === $second) {
-            return 0;
-        }
-        while ($rotations < strlen($rotationString)) {
-            $rotationString = rotateForward($rotationString);
-            ++$rotations;
-            if ($rotationString === $second) {
-                return $rotations;
-            }
-        }
-    }
-
-    return -1;
+    return $rotatingString === $second;
 }
 
 class TestShiftedDiff extends TestCase
@@ -56,6 +76,7 @@ class TestShiftedDiff extends TestCase
         $this->assertEquals(-1, shifted_diff("moose", "Moose"));
         $this->assertEquals(2, shifted_diff("isn't", "'tisn"));
         $this->assertEquals(0, shifted_diff("Esham", "Esham"));
+        $this->assertEquals(-1, shifted_diff("", ""));
         $this->assertEquals(-1, shifted_diff("dog", "god"));
     }
 
@@ -67,4 +88,27 @@ class TestShiftedDiff extends TestCase
         $result = stringsAreValid('testt', 'test');
         $this->assertFalse($result);
     }
+
+    /**
+     ** @test
+     **/
+    public function stringsAreValid_checkIfEmpty_returnsFalse()
+    {
+        $result = stringsAreValid('', '');
+        $this->assertFalse($result);
+    }
+
+    /**
+     ** @test
+     **/
+    public function rotateForward_rotateStringOneStepForward_returnsRotatedString()
+    {
+        $originalString = 'test';
+        $expectedString = 'ttes';
+
+        $result = rotateForward($originalString);
+
+        $this->assertEquals($result, $expectedString);
+    }
 }
+
