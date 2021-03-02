@@ -1,8 +1,8 @@
 <?php
 
-function find_routes(array $routes)
+function find_routes(array $routes): string
 {
-    $qtyStops = count($routes) * 2;
+    $qtyStops = calculateMaxStopQty($routes);
 
     $places = organizeRoutesAsTree($routes);
 
@@ -10,7 +10,12 @@ function find_routes(array $routes)
 
     $completeItinerary = sortRoute($qtyStops, $startingPoint, $places);
 
-    return trim(implode(', ', $completeItinerary));
+    return arrayAsString(', ', $completeItinerary);
+}
+
+function calculateMaxStopQty(array $routes): int
+{
+    return count($routes) * 2;
 }
 
 function organizeRoutesAsTree(array $routes): array
@@ -53,6 +58,11 @@ function sortRoute(int $qtyStops, string $startingPoint, array $places): array
         $i++;
     }
     return $completeItinerary;
+}
+
+function arrayAsString(string $separator, array $array): string
+{
+    return trim(implode($separator, $array));
 }
 
 class FollowThatSpy extends TestCase

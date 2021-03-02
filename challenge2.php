@@ -1,6 +1,6 @@
 <?php
 
-function orderWeight($str)
+function orderWeight($str): string
 {
     $nums = explode(" ", $str);
 
@@ -20,7 +20,7 @@ function orderWeight($str)
         }
     }
 
-    return implode(' ', $nums);
+    return arrayAsString(' ', $nums);
 }
 
 function validateNumberList(array $numberList): bool
@@ -28,15 +28,11 @@ function validateNumberList(array $numberList): bool
     foreach ($numberList as $numberAsString) {
         $number = (int)$numberAsString;
 
-        if ((string)$number !== (string)$numberAsString) {
-            return false;
-        }
-
-        if ($number < 0) {
-            return false;
-        }
-
-        if (!is_int($number)) {
+        if (
+            (string)$number !== (string)$numberAsString ||
+            $number < 0 ||
+            !is_int($number)
+        ) {
             return false;
         }
     }
@@ -63,16 +59,10 @@ function shouldSwapPositions(string $currentNumber, string $nextNumber): bool
 function calculateStringWeight(string $number): int
 {
     $digitArray = str_split($number);
-    $stringWeight = 0;
-
-    foreach ($digitArray as $digit) {
-        $stringWeight += $digit;
-    }
-
-    return $stringWeight;
+    return array_sum($digitArray);
 }
 
-function checkIfNextComesFirst(string $firstNumber, string $nextNumber)
+function checkIfNextComesFirst(string $firstNumber, string $nextNumber): bool
 {
     $firstAsArray = str_split($firstNumber);
     $nextAsArray = str_split($nextNumber);
@@ -80,22 +70,25 @@ function checkIfNextComesFirst(string $firstNumber, string $nextNumber)
     $nextArraySize = count($nextAsArray);
     $size = $firstArraySize;
 
+    if ($nextArraySize > $firstArraySize) {
+        $size = $nextArraySize;
+    }
+
     for ($i = 0; $i < $size; $i++) {
-        if (!isset($firstAsArray[$i])) {
+        if (!isset($firstAsArray[$i]) || $firstAsArray[$i] < $nextAsArray[$i]) {
             return false;
         }
-        if (!isset($nextAsArray[$i])) {
+        if (!isset($nextAsArray[$i]) || $firstAsArray[$i] > $nextAsArray[$i]) {
             return true;
-        }
-        if ($firstAsArray[$i] > $nextAsArray[$i]) {
-            return true;
-        }
-        if ($firstAsArray[$i] < $nextAsArray[$i]) {
-            return false;
         }
     }
 
     return false;
+}
+
+function arrayAsString(string $separator, array $array): string
+{
+    return implode($separator, $array);
 }
 
 class OrderWeightTestCases extends TestCase

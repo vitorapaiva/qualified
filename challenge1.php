@@ -1,9 +1,10 @@
 <?php
-function shifted_diff(string $first, string $second)
+function shifted_diff(string $first, string $second): int
 {
     $valid = stringsAreValid($first, $second);
     $rotationString = $first;
     $rotations = 0;
+    $invalid_shift = -1;
 
     if ($valid) {
         while ($rotations < strlen($rotationString)) {
@@ -18,7 +19,7 @@ function shifted_diff(string $first, string $second)
         }
     }
 
-    return -1;
+    return $invalid_shift;
 }
 
 function stringsAreValid(string $first, string $second): bool
@@ -41,7 +42,7 @@ function checkIfSameSize(string $first, string $second): bool
 
 function checkForEmptyStrings(string $first, string $second): bool
 {
-    return $first === '' || $second === '';
+    return empty($first) || empty($second);
 }
 
 function rotationNotNeeded(string $first, string $second): bool
@@ -54,17 +55,24 @@ function rotateForward(string $string): string
     $stringAsArray = str_split($string);
     $rotatedArray = [];
 
-    $rotatedArray[] = array_pop($stringAsArray);
+    $lastValueFromArray = array_pop($stringAsArray);
+    $rotatedArray[] = $lastValueFromArray;
+
     foreach ($stringAsArray as $letter) {
         $rotatedArray[] = $letter;
     }
 
-    return implode($rotatedArray);
+    return arrayAsString($rotatedArray);
 }
 
 function isStringRotated(string $rotatingString, string $second): bool
 {
     return $rotatingString === $second;
+}
+
+function arrayAsString(array $array): string
+{
+    return implode($array);
 }
 
 class TestShiftedDiff extends TestCase
