@@ -75,7 +75,7 @@ function arrayAsString(array $array): string
     return implode($array);
 }
 
-class TestShiftedDiff extends TestCase
+class TestShiftedDiffTest extends TestCase
 {
     public function testProvidedExamples()
     {

@@ -2,23 +2,16 @@
 
 function find_routes(array $routes): string
 {
-    $qtyStops = calculateMaxStopQty($routes);
+    $completeItinerary = [];
 
-    $places = organizeRoutesAsTree($routes);
-
+    $places = organizeRoutes($routes);
     $startingPoint = getStartingPoint($places);
-
-    $completeItinerary = sortRoute($qtyStops, $startingPoint, $places);
+    $completeItinerary = sortRoute($startingPoint, $completeItinerary, $places);
 
     return arrayAsString(', ', $completeItinerary);
 }
 
-function calculateMaxStopQty(array $routes): int
-{
-    return count($routes) * 2;
-}
-
-function organizeRoutesAsTree(array $routes): array
+function organizeRoutes(array $routes): array
 {
     $places = [];
     foreach ($routes as list($origin, $destiny)) {
@@ -44,20 +37,14 @@ function getStartingPoint(array $places): string
     return $startingPoint;
 }
 
-function sortRoute(int $qtyStops, string $startingPoint, array $places): array
+function sortRoute(string $startingPoint, array $completeItinerary, array $places): array
 {
-    $i = 0;
-    $completeItinerary = [];
-    while ($i < $qtyStops) {
-        $completeItinerary[] = $startingPoint;
-        if (!isset($places[$startingPoint]["to"])) {
-            break;
-        }
-        $nextStep = $places[$startingPoint]["to"];
-        $startingPoint = $nextStep;
-        $i++;
+    $completeItinerary[] = $startingPoint;
+    if (!isset($places[$startingPoint]["to"])) {
+        return $completeItinerary;
     }
-    return $completeItinerary;
+    $nextStep = $places[$startingPoint]["to"];
+    return sortRoute($nextStep, $completeItinerary, $places);
 }
 
 function arrayAsString(string $separator, array $array): string
@@ -65,7 +52,7 @@ function arrayAsString(string $separator, array $array): string
     return trim(implode($separator, $array));
 }
 
-class FollowThatSpy extends TestCase
+class FollowThatSpyTest extends TestCase
 {
     public function testAlgorithm()
     {
@@ -73,12 +60,15 @@ class FollowThatSpy extends TestCase
         $this->assertEquals($testroutes1, "MNL, TAG, CEB, TAC, BOR");
         $tesroutes2 = find_routes([["Chicago", "Winnipeg"], ["Halifax", "Montreal"], ["Montreal", "Toronto"], ["Toronto", "Chicago"], ["Winnipeg", "Seattle"]]);
         $this->assertEquals($tesroutes2, "Halifax, Montreal, Toronto, Chicago, Winnipeg, Seattle");
+        //$testroutes3 = find_routes([["MNL", "TAG"], ["CEB", "TAC"], ["TAG", "CEB"], ["TAC", "BOR"], ["BOR", "MNL"], ["MNL", "TAG"]]);
+        //$this->assertEquals($testroutes3, "MNL, TAG, CEB, TAC, BOR, MNL, TAG");
+
     }
 
     /**
      * @test
      **/
-    public function organizeRoutesAsTree_completeRoutes_returnsArray()
+    public function organizeRoutes_completeRoutes_returnsArray()
     {
         $input = [["MNL", "TAG"], ["CEB", "TAC"], ["TAG", "CEB"], ["TAC", "BOR"]];
         $expected = [
@@ -101,14 +91,14 @@ class FollowThatSpy extends TestCase
                 'from' => 'TAC'
             ]
         ];
-        $result = organizeRoutesAsTree($input);
+        $result = organizeRoutes($input);
         $this->assertEquals($expected, $result);
     }
 
     /**
      * @test
      **/
-    public function organizeRoutesAsTree_incompleteRoutes_returnsArray()
+    public function organizeRoutes_incompleteRoutes_returnsArray()
     {
         $input = [["MNL", "CEB"], ["CEB", "TAC"], ["TAG", "CEB"], ["TAC", "BOR"]];
         $expected = [
@@ -130,7 +120,7 @@ class FollowThatSpy extends TestCase
                 'from' => 'TAC'
             ]
         ];
-        $result = organizeRoutesAsTree($input);
+        $result = organizeRoutes($input);
         $this->assertEquals($expected, $result);
     }
 
@@ -217,10 +207,10 @@ class FollowThatSpy extends TestCase
                 'from' => 'TAC'
             ]
         ];
-        $qtyStops = 8;
+
         $startingPoint = 'MNL';
         $expected = ['MNL', 'TAG', 'CEB', 'TAC', 'BOR'];
-        $result = sortRoute($qtyStops, $startingPoint, $places);
+        $result = sortRoute($startingPoint, [], $places);
         $this->assertEquals($expected, $result);
     }
 }
